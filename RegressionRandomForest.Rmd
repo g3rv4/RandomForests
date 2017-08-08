@@ -1,0 +1,50 @@
+---
+title: "Regression"
+output: md_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+load('math_students.data') # dataset available at http://archive.ics.uci.edu/ml/datasets/Student+Performance
+```
+
+Building a random forest for regressions... Predicting the final grade on math based on the other variables. Using 5-fold cross validation just because we can.
+
+```{r}
+library(caret)
+
+model <- train(
+  G3 ~ .,
+  tuneLength = 1,
+  data = math_students, method = "rf",
+  trControl = trainControl(method = "cv", number = 5, verboseIter = TRUE)
+)
+```
+
+This is the fun part (you need to have JAVA installed on your machine for `r2pmml` to work)
+
+```{r}
+library(r2pmml)
+r2pmml(model, "regression_rf.pmml")
+```
+
+And volà, we have our PMML file. Now let's add a column with the predictions here so that we can compare them with what we get on C#
+
+```{r}
+library(dplyr)
+
+with_predicted_value <- math_students %>%
+  mutate(PredictedG3 = predict(model, math_students))
+```
+
+Store this in a CSV
+
+```{r}
+library(readr)
+
+with_predicted_value %>%
+  write_csv('regression_rf_prediction.csv')
+```
