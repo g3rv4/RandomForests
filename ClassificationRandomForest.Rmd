@@ -1,0 +1,52 @@
+---
+title: "ClassificationRandomForest"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Alright, now let's predict if a room is occupied given a bunch of variables (I'm cheating here... sampled down the data a lot to make the whole process faster... but feel free to use the whole dataset if you have time!)
+
+```{r}
+load('occupancy.data') # this is a sampled version of the dataset available at http://archive.ics.uci.edu/ml/datasets/Occupancy+Detection+
+```
+
+Training the classification random forest
+
+```{r}
+library(caret)
+
+model <- train(
+  Occupancy ~ .,
+  tuneLength = 1,
+  data = occupancy, method = "rf",
+  trControl = trainControl(method = "cv", number = 2, verboseIter = TRUE)
+)
+```
+
+Saving it to PMML (what I'm going to use in the C# of the world)
+
+```{r}
+library(r2pmml)
+r2pmml(model, "classification_rf.pmml")
+```
+
+Predict the values (so that I can compare the predictions)
+
+```{r}
+library(dplyr)
+
+with_predicted_value <- occupancy %>%
+  mutate(PredictedOccupancy = predict(model, occupancy))
+```
+
+Save everything to a csv (that's what I'm using on the sample application)
+
+```{r}
+library(readr)
+
+with_predicted_value %>%
+  write_csv('classification_rf_prediction.csv')
+```
