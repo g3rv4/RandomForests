@@ -18,7 +18,8 @@ Training the classification random forest
 ```{r}
 library(caret)
 
-model <- train(
+set.seed(42)
+model2 <- train(
   Occupancy ~ .,
   tuneLength = 1,
   data = occupancy, method = "rf",
@@ -49,4 +50,14 @@ library(readr)
 
 with_predicted_value %>%
   write_csv('classification_rf_prediction.csv')
+```
+
+Save the probabilities (to verify that my probabilities implementation is correct)
+
+```{r}
+with_probabilities <- occupancy %>%
+  bind_cols(predict(model, occupancy, type = 'prob'))
+
+with_probabilities %>%
+  write_csv('classification_rf_probabilities.csv')
 ```

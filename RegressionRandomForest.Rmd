@@ -16,6 +16,7 @@ Building a random forest for regressions... Predicting the final grade on math b
 ```{r}
 library(caret)
 
+set.seed(42)
 model <- train(
   G3 ~ .,
   tuneLength = 1,
